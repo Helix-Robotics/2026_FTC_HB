@@ -2,6 +2,15 @@
 
 This is the Helix Black repository for the 2026 season. (We will probably be changing it a lot)
 
+To update to the later versions of FtcRobotController, you change whatever they change within the gradle scripts module.
+
+The main code is in [text](TeamCode/src/main/java/org/firstinspires/ftc/teamcode)
+
+The rest of the packages are self-explanatory. Autononous programs go into autos, teleops go into teleops, and so on. (I shouldn't need to explain this..)
+
+Subsystems are within the robot package.([text](TeamCode/src/main/java/org/firstinspires/ftc/teamcode/robot/subsystems))
+
+
 blah blah blah whatever i don't think anyone actually reads these
 
 but i'll leave it here anyway because why not
