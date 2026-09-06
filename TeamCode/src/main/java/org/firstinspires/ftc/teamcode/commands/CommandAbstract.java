@@ -7,13 +7,12 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.robot.subsystems.Feeder;
+
 import org.firstinspires.ftc.teamcode.robot.subsystems.HelixLocalisation;
-import org.firstinspires.ftc.teamcode.robot.subsystems.Hood;
-import org.firstinspires.ftc.teamcode.robot.subsystems.LedController;
+
+//import org.firstinspires.ftc.teamcode.robot.subsystems.LedController;
 import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
-import org.firstinspires.ftc.teamcode.robot.subsystems.ShooterAbstract;
-import org.firstinspires.ftc.teamcode.robot.subsystems.ShooterV1;
+
 import org.firstinspires.ftc.teamcode.robot.subsystems.Vision;
 import org.firstinspires.ftc.teamcode.utils.Localizer;
 
@@ -22,11 +21,11 @@ public abstract class CommandAbstract {
     private Localizer localiser;
     protected Vision vision;
     public MecanumDrive drivetrain;
-    protected Feeder feeder;
-    public Hood hood;
-    private LedController ledController;
-    public ShooterAbstract shooter;
-    public ShooterV1 shooterversion1;
+
+
+    //private LedController ledController;
+
+
     protected HardwareMap hardwareMap;
     protected boolean isAiming = false;
     protected boolean isBlue = false;
@@ -66,7 +65,7 @@ public abstract class CommandAbstract {
         localiser = drivetrain.getLocalizer();
         vision = drivetrain.getVision();
 
-        ledController = new LedController(hardwareMap);
+        //ledController = new LedController(hardwareMap);
 
         createShooterInstances();
     }
@@ -77,42 +76,24 @@ public abstract class CommandAbstract {
 
     public abstract void createShooterInstances();
 
-    public void launch(boolean requested) {
-        shooter.shoot(requested);
-    }
+
 
     // run every loop
     public void update() {
-        updateShooter();
         helixLocaliser.updateLocalisation();
         drivetrain.update();
     }
 
-    public abstract void updateShooter();
 
     // get launch state
-    public ShooterAbstract.LaunchState getLaunchState(){
-        return shooter.getLaunchState();
-    }
 
-    public double getFeedtime(){
-        return feeder.getFeedTime();
-    }
 
-    public abstract void aimAndPrepare();
-    public abstract void cancelAiming();
-    public abstract void shoot();
 
-    public void stopFeeder() {
-        feeder.stop();
-    }
-    public void startFeeder() {
-        feeder.start();
-    }
 
-    public void startFeederBackwards() {
-        feeder.feedBack();
-    }
+
+
+
+
 
     public void fieldRelativeDrive(double right, double forward, double rotate) {
         drivetrain.driveFieldRelative(forward, right, rotate);
@@ -350,19 +331,22 @@ public abstract class CommandAbstract {
         double tagX = vision.getTagX();
 
         // Calculate the target using your regression formula instead of a hardcoded value
-        double txTarget = shooter.variableTXCalc(distance);
+
 
         double txTolerance = TX_TOLERANCE;
         double kP = ALIGN_KP_Special;
         double kF = ALIGN_KF_Special;
         double maxTurnPower = ALIGN_CAP_POWER;
 
+
+        /**
         // Decide which target to use for Blue Alliance
         if (isBlue){
             // Note: Depending on your tuning, you might want this to be negative
             // e.g., txTarget = -shooter.variableTXCalc(distance);
             txTarget = TX_TARGET_BLUE_Special;
         }
+         **/
 
         // invalid result
         if(tagX < -180) {
@@ -370,7 +354,9 @@ public abstract class CommandAbstract {
             return true;
         }
 
-        double error = tagX - txTarget;
+        /**
+        //double txTarget = shooter.variableTXCalc(distance);
+        //double error = tagX - txTarget;
 
         // if under tolerance, return
         if(Math.abs(error) < txTolerance) {
@@ -386,12 +372,11 @@ public abstract class CommandAbstract {
 
         drivetrain.drive(0, 0, turnPower);
         return false;
+         **/
     }
 
 
-    public void maxShooterPower() {
-        shooter.maxSpeed();
-    }
+
 
     public Pose2d getPodPose(){
         return helixLocaliser.getPose();
@@ -414,26 +399,10 @@ public abstract class CommandAbstract {
     public double getCameraTagTa(){
         return vision.getTa();
     }
-    public void spinShooter() {
-        shooter.spinUpShooter();
-    }
 
-    public void stopShooter() {
-        shooter.stopShooter();
-    }
 
-    public void feedBackward() {
-        feeder.feedBack();
-    }
 
-    public void setHoodPIDF() {}
 
-    // getz
-    public double getShooterVelocity() { return shooter.getShooterVelocity(); }
-    public double getShooterVelocityInRPM() { return shooter.getShooterVelocityInRpm(); }
-    public double getShooterPower() { return shooter.getShooterPower(); }
-    public double getFeederPowerLeft() { return feeder.getLeftPower(); }
-    public double getFeederPowerRight() { return feeder.getRightPower(); }
     public double getFRPower() { return drivetrain.getFRPower(); }
     public double getFLPower() { return drivetrain.getFLPower(); }
     public double getBRPower() { return drivetrain.getBRPower(); }
@@ -454,42 +423,14 @@ public abstract class CommandAbstract {
         drivetrain.resetImu();
     }
 
-    public void testShooterSpeed(){
-        shooter.test();
-    }
 
-    public abstract double getHoodPower();
-    public double getHoodPosition() {
-        return hood.getHoodAngleDegrees();
-    }
 
-    public abstract double getHoodTarget();
 
-    public abstract double getHoodCurrent();
-
-    public void stowHood() {
-        hood.stowHood();
-    };
-
-    public void maxHood() {
-        hood.maxHood();
-    };
-
-    public abstract void zeroHood();
-
-    public abstract void hoodUp();
-
-    public abstract void hoodUp5();
-    public abstract void hoodDown5();
 
     public boolean getIsBlue(){
         return isBlue;
     }
 
-    public abstract double calculateHoodAngle(double distance);
 
-    public abstract double calculateShooterRPM(double distance);
-
-    public abstract Action setHoodTarget(double angle);
 
 }
