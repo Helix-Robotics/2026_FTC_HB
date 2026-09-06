@@ -1,0 +1,495 @@
+package org.firstinspires.ftc.teamcode.commands;
+
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.teamcode.robot.subsystems.Feeder;
+import org.firstinspires.ftc.teamcode.robot.subsystems.HelixLocalisation;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Hood;
+import org.firstinspires.ftc.teamcode.robot.subsystems.LedController;
+import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
+import org.firstinspires.ftc.teamcode.robot.subsystems.ShooterAbstract;
+import org.firstinspires.ftc.teamcode.robot.subsystems.ShooterV1;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Vision;
+import org.firstinspires.ftc.teamcode.utils.Localizer;
+
+public abstract class CommandAbstract {
+    private HelixLocalisation helixLocaliser;
+    private Localizer localiser;
+    protected Vision vision;
+    public MecanumDrive drivetrain;
+    protected Feeder feeder;
+    public Hood hood;
+    private LedController ledController;
+    public ShooterAbstract shooter;
+    public ShooterV1 shooterversion1;
+    protected HardwareMap hardwareMap;
+    protected boolean isAiming = false;
+    protected boolean isBlue = false;
+    public static double TX_TARGET_BLUE = -0.5;   // This is for close tip shots  //-0.8; //-5.12;
+    public static double TX_TARGET_RED = 0.8; // This is for close tip shots  //3.4 //before 16 may is 0.8  //1.0; //2.8; //2.98;
+
+    public static double TX_TARGET_RED_Special = 0.5; // This is for auto  // 3.9 furthest to the right position for red in the teleop
+    public static double TX_TARGET_BLUE_Special = -2.0; // This is for auto
+
+    public static double TX_TOLERANCE = 0.1; // 0.08
+    public static double ALIGN_KP = 0.01; // 0.01 is old value
+    public static double ALIGN_KF = 0.11; //0.275 //0.11
+
+    public static double ALIGN_KP_Special = 0.005; //auto kp
+
+    public static double ALIGN_KF_Special = 0.083; //auto kf
+
+    public static double ALIGN_CAP_POWER = 0.4;
+
+    //double distance = getDistanceFromGoal(); my changes for the variable tx
+
+    public enum ALIGN_STATUS {
+        PENDING,
+        START,
+        IN_PROGRESS,
+        FINISH
+    }
+
+    public static ALIGN_STATUS alignStatus = ALIGN_STATUS.PENDING;
+
+    public CommandAbstract(HardwareMap hardwareMap, Pose2d initialPose) {
+        this.hardwareMap = hardwareMap;
+
+        Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
+        drivetrain = new MecanumDrive(hardwareMap, startPose);
+        helixLocaliser = drivetrain.getHelixLocalizer();
+        localiser = drivetrain.getLocalizer();
+        vision = drivetrain.getVision();
+
+        ledController = new LedController(hardwareMap);
+
+        createShooterInstances();
+    }
+
+    public void setIsBlue(boolean isBlue){
+        this.isBlue = isBlue;
+    }
+
+    public abstract void createShooterInstances();
+
+    public void launch(boolean requested) {
+        shooter.shoot(requested);
+    }
+
+    // run every loop
+    public void update() {
+        updateShooter();
+        helixLocaliser.updateLocalisation();
+        drivetrain.update();
+    }
+
+    public abstract void updateShooter();
+
+    // get launch state
+    public ShooterAbstract.LaunchState getLaunchState(){
+        return shooter.getLaunchState();
+    }
+
+    public double getFeedtime(){
+        return feeder.getFeedTime();
+    }
+
+    public abstract void aimAndPrepare();
+    public abstract void cancelAiming();
+    public abstract void shoot();
+
+    public void stopFeeder() {
+        feeder.stop();
+    }
+    public void startFeeder() {
+        feeder.start();
+    }
+
+    public void startFeederBackwards() {
+        feeder.feedBack();
+    }
+
+    public void fieldRelativeDrive(double right, double forward, double rotate) {
+        drivetrain.driveFieldRelative(forward, right, rotate);
+    }
+
+    public void aimAtTag(double tagX) {
+        //Dont use this
+        //drivetrain.drive(0, 0, (tagX)*-0.2);
+    }
+
+    public void alignToTag() {
+        /*double tagX = vision.getTagX();
+        if (tagX > 1 || tagX < -1) {
+            drivetrain.drive(0, 0, tagX * 0.02);
+        }*/
+        //Dont use this
+    }
+
+    public ALIGN_STATUS getAlignStatus(){
+        return alignStatus;
+    }
+    public boolean turnToTagO(){
+        //hard code pid just for turning
+        double tagX = vision.getTagX();
+        double txTarget = TX_TARGET_RED;
+        double txTolerance = TX_TOLERANCE;
+        double kP = ALIGN_KP;
+        double kF = ALIGN_KF;
+        double maxTurnPower = ALIGN_CAP_POWER;
+
+        //decide which target to use
+        if (isBlue){
+            txTarget = TX_TARGET_BLUE;
+        }
+
+        // invalid result
+        if(tagX < -180) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        double error = tagX - txTarget;
+        //if under tolerance, return
+        if(Math.abs(error) < txTolerance) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        //calculate turn power using P and F , we wont use D as it will be small angle
+        //we can just use small P
+        double turnPower = kP*error + kF*error/Math.abs(error);
+        if (Math.abs(turnPower) > maxTurnPower) {
+            turnPower = maxTurnPower * turnPower / Math.abs(turnPower);
+        }
+        drivetrain.drive(0, 0, turnPower);
+        return false;
+    }
+    public void turnToTag(boolean startTurn){
+        switch(alignStatus){
+            case PENDING:
+                if (startTurn){
+                    alignStatus = ALIGN_STATUS.START;
+                }
+                break;
+            case START:
+            case IN_PROGRESS:
+                boolean finished = turnToTagO();
+                if (finished){
+                    alignStatus = ALIGN_STATUS.FINISH;
+                } else {
+                    alignStatus = ALIGN_STATUS.IN_PROGRESS;
+                }
+                break;
+            case FINISH:
+                drivetrain.drive(0, 0, 0);
+                alignStatus = ALIGN_STATUS.PENDING;
+                break;
+        }
+    }
+
+
+
+    public void turnToTagLongShooting(boolean startTurn){
+        switch(alignStatus){
+            case PENDING:
+                if (startTurn){
+                    alignStatus = ALIGN_STATUS.START;
+                }
+                break;
+            case START:
+            case IN_PROGRESS:
+                boolean finished = turnToTagLongShootingO();
+                if (finished){
+                    alignStatus = ALIGN_STATUS.FINISH;
+                } else {
+                    alignStatus = ALIGN_STATUS.IN_PROGRESS;
+                }
+                break;
+            case FINISH:
+                drivetrain.drive(0, 0, 0);
+                alignStatus = ALIGN_STATUS.PENDING;
+                break;
+        }
+    }
+
+
+    public boolean turnToTagLongShootingO(){
+        //hard code pid just for turning
+        double tagX = vision.getTagX();
+        double txTarget = TX_TARGET_RED_Special;
+        double txTolerance = TX_TOLERANCE;
+        double kP = ALIGN_KP_Special;
+        double kF = ALIGN_KF_Special;
+        double maxTurnPower = ALIGN_CAP_POWER;
+
+        //decide which target to use
+        if (isBlue){
+            txTarget = TX_TARGET_BLUE_Special;
+        }
+
+        // invalid result
+        if(tagX < -180) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        double error = tagX - txTarget;
+        //if under tolerance, return
+        if(Math.abs(error) < txTolerance) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        //calculate turn power using P and F , we wont use D as it will be small angle
+        //we can just use small P
+        double turnPower = kP*error + kF*error/Math.abs(error);
+        if (Math.abs(turnPower) > maxTurnPower) {
+            turnPower = maxTurnPower * turnPower / Math.abs(turnPower);
+        }
+        drivetrain.drive(0, 0, turnPower);
+        return false;
+    }
+
+    public class TurnToTagLongShootingActions implements Action {
+
+        //private boolean hold = false;
+
+
+        // actions are formatted via telemetry packets as below
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            //hood.setTargetPosition(220);
+            vision.update();
+            boolean finished = turnToTagLongShootingO();
+            if (finished) {
+                drivetrain.drive(0, 0, 0);
+                return false;
+            }
+            return true;
+
+        }
+    }
+
+    public Action turnToTagLongShootingActions() {
+        return new TurnToTagLongShootingActions();
+    }
+
+
+
+    public void turnToTagVariableFarShooting(boolean startTurn){
+        switch(alignStatus){
+            case PENDING:
+                if (startTurn){
+                    alignStatus = ALIGN_STATUS.START;
+                }
+                break;
+            case START:
+            case IN_PROGRESS:
+                boolean finished = turnToTagVariableFarShootingO();
+                if (finished){
+                    alignStatus = ALIGN_STATUS.FINISH;
+                } else {
+                    alignStatus = ALIGN_STATUS.IN_PROGRESS;
+                }
+                break;
+            case FINISH:
+                drivetrain.drive(0, 0, 0);
+                alignStatus = ALIGN_STATUS.PENDING;
+                break;
+        }
+    }
+
+    public boolean turnToTagVariableFarShootingO(){
+        /**
+
+     
+        double txTarget = TX_TARGET_RED_Special;
+        //double txTarget = shooter.variableTXCalc(distance);
+        double txTolerance = TX_TOLERANCE;
+        double kP = ALIGN_KP_Special;
+        double kF = ALIGN_KF_Special;
+        double maxTurnPower = ALIGN_CAP_POWER;
+
+        //decide which target to use
+        if (isBlue){
+            txTarget = TX_TARGET_BLUE_Special;
+        }
+
+        // invalid result
+        if(tagX < -180) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        double error = tagX - txTarget;
+        //if under tolerance, return
+        if(Math.abs(error) < txTolerance) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        //calculate turn power using P and F , we wont use D as it will be small angle
+        //we can just use small P
+        double turnPower = kP*error + kF*error/Math.abs(error);
+        if (Math.abs(turnPower) > maxTurnPower) {
+            turnPower = maxTurnPower * turnPower / Math.abs(turnPower);
+        }
+        drivetrain.drive(0, 0, turnPower);
+        return false;
+         **/
+
+        double distance = getDistanceFromGoal();
+
+        double tagX = vision.getTagX();
+
+        // Calculate the target using your regression formula instead of a hardcoded value
+        double txTarget = shooter.variableTXCalc(distance);
+
+        double txTolerance = TX_TOLERANCE;
+        double kP = ALIGN_KP_Special;
+        double kF = ALIGN_KF_Special;
+        double maxTurnPower = ALIGN_CAP_POWER;
+
+        // Decide which target to use for Blue Alliance
+        if (isBlue){
+            // Note: Depending on your tuning, you might want this to be negative
+            // e.g., txTarget = -shooter.variableTXCalc(distance);
+            txTarget = TX_TARGET_BLUE_Special;
+        }
+
+        // invalid result
+        if(tagX < -180) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        double error = tagX - txTarget;
+
+        // if under tolerance, return
+        if(Math.abs(error) < txTolerance) {
+            drivetrain.drive(0, 0, 0);
+            return true;
+        }
+
+        // calculate turn power using P and F
+        double turnPower = kP*error + kF*error/Math.abs(error);
+        if (Math.abs(turnPower) > maxTurnPower) {
+            turnPower = maxTurnPower * turnPower / Math.abs(turnPower);
+        }
+
+        drivetrain.drive(0, 0, turnPower);
+        return false;
+    }
+
+
+    public void maxShooterPower() {
+        shooter.maxSpeed();
+    }
+
+    public Pose2d getPodPose(){
+        return helixLocaliser.getPose();
+    }
+
+    public Vision getVision(){
+        return vision;
+    }
+
+    public Pose2d getVisionPose() {
+        return vision.getBotPose();
+    }
+
+    public double getCameraTagX(){
+        return vision.getTagX();
+    }
+    public double getCameraTagY(){
+        return vision.getTagY();
+    }
+    public double getCameraTagTa(){
+        return vision.getTa();
+    }
+    public void spinShooter() {
+        shooter.spinUpShooter();
+    }
+
+    public void stopShooter() {
+        shooter.stopShooter();
+    }
+
+    public void feedBackward() {
+        feeder.feedBack();
+    }
+
+    public void setHoodPIDF() {}
+
+    // getz
+    public double getShooterVelocity() { return shooter.getShooterVelocity(); }
+    public double getShooterVelocityInRPM() { return shooter.getShooterVelocityInRpm(); }
+    public double getShooterPower() { return shooter.getShooterPower(); }
+    public double getFeederPowerLeft() { return feeder.getLeftPower(); }
+    public double getFeederPowerRight() { return feeder.getRightPower(); }
+    public double getFRPower() { return drivetrain.getFRPower(); }
+    public double getFLPower() { return drivetrain.getFLPower(); }
+    public double getBRPower() { return drivetrain.getBRPower(); }
+    public double getBLPower() { return drivetrain.getBLPower(); }
+
+    public double getDistanceFromTag() { return vision.getDistanceToTagOnField(); }
+    public double getDistanceFromTagPODS() {
+        return helixLocaliser.getDistanceFromGoal(isBlue);
+    }
+
+    public double getDistanceFromGoalFused() { return helixLocaliser.getDistanceFromGoal(isBlue);}
+
+    public double getDistanceFromGoal() {
+        return getDistanceFromTag();
+    }
+
+    public void resetImu() {
+        drivetrain.resetImu();
+    }
+
+    public void testShooterSpeed(){
+        shooter.test();
+    }
+
+    public abstract double getHoodPower();
+    public double getHoodPosition() {
+        return hood.getHoodAngleDegrees();
+    }
+
+    public abstract double getHoodTarget();
+
+    public abstract double getHoodCurrent();
+
+    public void stowHood() {
+        hood.stowHood();
+    };
+
+    public void maxHood() {
+        hood.maxHood();
+    };
+
+    public abstract void zeroHood();
+
+    public abstract void hoodUp();
+
+    public abstract void hoodUp5();
+    public abstract void hoodDown5();
+
+    public boolean getIsBlue(){
+        return isBlue;
+    }
+
+    public abstract double calculateHoodAngle(double distance);
+
+    public abstract double calculateShooterRPM(double distance);
+
+    public abstract Action setHoodTarget(double angle);
+
+}
