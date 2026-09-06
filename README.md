@@ -2,7 +2,7 @@
 
 This is the Helix Black repository for the 2026 season. (We will probably be changing it a lot)
 
-To update to the later versions of FtcRobotController, you change whatever they change within the gradle scripts module.
+To update to the later versions of FtcRobotController, you change whatever they change within the gradle scripts module. (or sync fork)
 
 The main code is in [TeamCode/src/main/java/org/firstinspires/ftc/teamcode](TeamCode/src/main/java/org/firstinspires/ftc/teamcode)
 
