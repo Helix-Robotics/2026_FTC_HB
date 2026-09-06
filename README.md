@@ -3,7 +3,8 @@
 This is the Helix Black repository for the 2026 season. (We will probably be changing it a lot)
 
 blah blah blah whatever i don't think anyone actually reads these
-i'll leave it here anyway because why not
+
+but i'll leave it here anyway because why not
 
 
 ## Requirements
@@ -1735,3 +1736,7 @@ Changes include:
  * The API for the Legacy Module and Core Device Interface Module have been updated.
    - Support for encoders with the Legacy Module is now working.
  * The hardware loop has been updated for better performance.
+
+
+
+why are you here
