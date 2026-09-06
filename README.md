@@ -11,10 +11,11 @@ The rest of the packages are self-explanatory. Autononous programs go into autos
 Subsystems are within the robot package.([Teamcode/src/main/java/org/firstinspires/ftc/teamcode/robot/subsystems](TeamCode/src/main/java/org/firstinspires/ftc/teamcode/robot/subsystems))
 
 
-blah blah blah whatever i don't think anyone actually reads these
+
+
+whatever i don't think anyone actually reads these
 
 but i'll leave it here anyway because why not
-
 
 ## Requirements
 To use this Android Studio project, you will need Android Studio Ladybug (2024.2) or later.
