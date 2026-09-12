@@ -257,9 +257,9 @@ public final class MecanumDrive {
         //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
         // If fixed the parameters
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT; //before 20 june was right //before may 23 was right       //before was FACING LEFT
+                RevHubOrientationOnRobot.LogoFacingDirection.UP;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD; //before june 20 was backward //now backward //before forwward
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
         // drive model parameters
         public double inPerTick = 1.0 / (19.89436789*25.4); //This basing on stats from gobilda setup //0.00502; //314.0/62604;
