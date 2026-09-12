@@ -272,8 +272,12 @@ public final class MecanumDrive {
         // 11/Nov -1 kV: 0.00019309119506222592, kS: 3.0857719939393746
         // 11/Nov -2 kV: 0.00022649552710333996, kS: 2.3840538328293186
         // 11/Nov -3 kV: 0.00027752052012891277, kS: 1.0527922657265067
-        public double kS = 0.9182138486327918;  // 1.05240 before april 26
-        public double kV = 0.00026592358669776654;  // Before April 26 value 0.00023794
+
+
+
+
+        public double kS = 0.5263245755835344; //0.9182138486327918;  // 1.05240 before april 26
+        public double kV = 0.0002586202004916537; //0.00026592358669776654;  // Before April 26 value 0.00023794
         public double kA = 0.000024;  //original value 0.000063
 
         // path profile parameters (in inches)
