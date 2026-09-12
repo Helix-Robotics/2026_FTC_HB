@@ -13,13 +13,13 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.HelixLocalisation;
 //import org.firstinspires.ftc.teamcode.robot.subsystems.LedController;
 import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
 
-import org.firstinspires.ftc.teamcode.robot.subsystems.Vision;
+//import org.firstinspires.ftc.teamcode.robot.subsystems.Vision; just for now
 import org.firstinspires.ftc.teamcode.utils.Localizer;
 
 public abstract class CommandAbstract {
     private HelixLocalisation helixLocaliser;
     private Localizer localiser;
-    protected Vision vision;
+    // protected Vision vision; just for now
     public MecanumDrive drivetrain;
 
 
@@ -63,7 +63,7 @@ public abstract class CommandAbstract {
         drivetrain = new MecanumDrive(hardwareMap, startPose);
         helixLocaliser = drivetrain.getHelixLocalizer();
         localiser = drivetrain.getLocalizer();
-        vision = drivetrain.getVision();
+        //vision = drivetrain.getVision(); just for now
 
         //ledController = new LedController(hardwareMap);
 
@@ -115,6 +115,8 @@ public abstract class CommandAbstract {
     public ALIGN_STATUS getAlignStatus(){
         return alignStatus;
     }
+
+    /**
     public boolean turnToTagO(){
         //hard code pid just for turning
         double tagX = vision.getTagX();
@@ -151,6 +153,7 @@ public abstract class CommandAbstract {
         drivetrain.drive(0, 0, turnPower);
         return false;
     }
+
     public void turnToTag(boolean startTurn){
         switch(alignStatus){
             case PENDING:
@@ -262,6 +265,8 @@ public abstract class CommandAbstract {
         return new TurnToTagLongShootingActions();
     }
 
+     **/
+
 
 
     public void turnToTagVariableFarShooting(boolean startTurn){
@@ -326,9 +331,9 @@ public abstract class CommandAbstract {
         return false;
          **/
 
-        double distance = getDistanceFromGoal();
+        //double distance = getDistanceFromGoal();  just for now
 
-        double tagX = vision.getTagX();
+        //double tagX = vision.getTagX(); just for now
 
         // Calculate the target using your regression formula instead of a hardcoded value
 
@@ -349,10 +354,10 @@ public abstract class CommandAbstract {
          **/
 
         // invalid result
-        if(tagX < -180) {
-            drivetrain.drive(0, 0, 0);
-            return true;
-        }
+        //if(tagX < -180) {
+          //  drivetrain.drive(0, 0, 0);    just for now
+            //return true;
+        //}
 
         /**
         //double txTarget = shooter.variableTXCalc(distance);
@@ -383,6 +388,8 @@ public abstract class CommandAbstract {
         return helixLocaliser.getPose();
     }
 
+
+    /**   Commented out vision stuff just for now
     public Vision getVision(){
         return vision;
     }
@@ -400,6 +407,7 @@ public abstract class CommandAbstract {
     public double getCameraTagTa(){
         return vision.getTa();
     }
+     **/
 
 
 
@@ -409,16 +417,16 @@ public abstract class CommandAbstract {
     public double getBRPower() { return drivetrain.getBRPower(); }
     public double getBLPower() { return drivetrain.getBLPower(); }
 
-    public double getDistanceFromTag() { return vision.getDistanceToTagOnField(); }
+    //public double getDistanceFromTag() { return vision.getDistanceToTagOnField(); } just for now
     public double getDistanceFromTagPODS() {
         return helixLocaliser.getDistanceFromGoal(isBlue);
     }
 
     public double getDistanceFromGoalFused() { return helixLocaliser.getDistanceFromGoal(isBlue);}
 
-    public double getDistanceFromGoal() {
-        return getDistanceFromTag();
-    }
+    //public double getDistanceFromGoal() {
+      //  return getDistanceFromTag();  just  for now
+    //}
 
     public void resetImu() {
         drivetrain.resetImu();
