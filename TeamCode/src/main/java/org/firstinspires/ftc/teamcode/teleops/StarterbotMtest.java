@@ -41,18 +41,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HelixLocalisation;
+import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @TeleOp(name = "Mecanum code")
 //@Disabled
-public class StarterbotM extends OpMode {
+public class StarterbotMtest extends OpMode {
 
     // Declare OpMode members.
     private DcMotor leftFrontDrive = null;
@@ -63,6 +62,7 @@ public class StarterbotM extends OpMode {
     private DcMotorEx elevator = null;
     private CRServo door = null;
     public MecanumDrive drivetrain;
+    public HelixLocalisation localizer;
 
     //private CRServo leftIntakeServo = null;
     //private CRServo rightIntakeServo = null;
@@ -90,6 +90,9 @@ public class StarterbotM extends OpMode {
     double speedmod;
     boolean intaking = false;
     boolean outtaking = false;
+    double forward = gamepad1.left_stick_x;
+    double right = gamepad1.left_stick_y;
+    double turn = gamepad1.right_stick_x;
 
     public static double P = 1;
     public static double I = 0;
@@ -160,7 +163,21 @@ public class StarterbotM extends OpMode {
         telemetry.addData("Status", "Initialized");
         packet.put("Status", "Initialized");
     }
+    public List<Double> bindDriveTrain() {
+        double forward = gamepad1.left_stick_x;
+        double right = gamepad1.left_stick_y;
+        double turn = gamepad1.right_stick_x;
 
+        List<Double> doubleList = new ArrayList<>();
+
+        // Add Double values to the list
+        doubleList.add(forward);
+        doubleList.add(right);
+        doubleList.add(turn);
+
+        // Return the populated list
+        return doubleList;
+    }
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit START
      */
@@ -180,8 +197,10 @@ public class StarterbotM extends OpMode {
      */
     @Override
     public void loop() {
+        List<Double> driveValues = bindDriveTrain();
 
-        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        drivetrain.driveFieldRelative(driveValues.get(1), driveValues.get(0), driveValues.get(2));
+
         elevatorPos = elevator.getCurrentPosition();
         // intakePower = gamepad1.right_trigger * 0.9 - gamepad1.left_trigger * 0.9;
         speedmod = 1;
@@ -283,7 +302,7 @@ public class StarterbotM extends OpMode {
     public void stop() {
     }
 
-//    void arcadeDrive(double forward, double rotate) {
+    //    void arcadeDrive(double forward, double rotate) {
 //        leftPower = forward - rotate;
 //        rightPower = forward + rotate;
 //
@@ -293,25 +312,25 @@ public class StarterbotM extends OpMode {
 //        leftDrive.setPower(leftPower * speedmod);
 //        rightDrive.setPower(rightPower * speedmod);
 //    }
-void mecanumDrive(double forward, double strafe, double rotate){
+    void mecanumDrive(double forward, double strafe, double rotate){
 
-    /* the denominator is the largest motor power (absolute value) or 1
-     * This ensures all the powers maintain the same ratio,
-     * but only if at least one is out of the range [-1, 1]
-     */
-    double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), 1);
+        /* the denominator is the largest motor power (absolute value) or 1
+         * This ensures all the powers maintain the same ratio,
+         * but only if at least one is out of the range [-1, 1]
+         */
+        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), 1);
 
-    leftFrontPower = (forward + strafe + rotate) / denominator;
-    rightFrontPower = (forward - strafe - rotate) / denominator;
-    leftBackPower = (forward - strafe + rotate) / denominator;
-    rightBackPower = (forward + strafe - rotate) / denominator;
+        leftFrontPower = (forward + strafe + rotate) / denominator;
+        rightFrontPower = (forward - strafe - rotate) / denominator;
+        leftBackPower = (forward - strafe + rotate) / denominator;
+        rightBackPower = (forward + strafe - rotate) / denominator;
 
-    leftFrontDrive.setPower(leftFrontPower);
-    rightFrontDrive.setPower(rightFrontPower);
-    leftBackDrive.setPower(leftBackPower);
-    rightBackDrive.setPower(rightBackPower);
+        leftFrontDrive.setPower(leftFrontPower);
+        rightFrontDrive.setPower(rightFrontPower);
+        leftBackDrive.setPower(leftBackPower);
+        rightBackDrive.setPower(rightBackPower);
 
-}
+    }
 
     public void setTargetPosition(double degrees) {
 
