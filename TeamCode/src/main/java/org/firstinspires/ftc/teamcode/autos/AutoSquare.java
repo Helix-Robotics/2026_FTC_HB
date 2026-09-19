@@ -30,10 +30,10 @@ public class AutoSquare extends LinearOpMode {
             .lineToY(squarelength)
             .waitSeconds(1)
             .setTangent(Math.toRadians(0))
-            .lineToX(-squarelength)
+            .lineToX(0)
             .waitSeconds(1)
             .setTangent(Math.toRadians(90))
-            .lineToY(-squarelength);
+            .lineToY(0);
         
         while(!isStopRequested() && !opModeIsActive()){
             telemetry.addData("Position during init: ", localizer.getPose());

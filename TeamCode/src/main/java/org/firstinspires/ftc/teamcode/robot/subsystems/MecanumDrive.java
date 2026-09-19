@@ -276,23 +276,23 @@ public final class MecanumDrive {
 
 
 
-        public double kS = 0.5263245755835344; //0.9182138486327918;  // 1.05240 before april 26
-        public double kV = 0.0002586202004916537; //0.00026592358669776654;  // Before April 26 value 0.00023794
-        public double kA = 0.000024;  //original value 0.000063
+        public double kS = 0.6387054295373398; //0.9182138486327918;  // 1.05240 before april 26
+        public double kV = 0.00025829322013896087; //0.00026592358669776654;  // Before April 26 value 0.00023794
+        public double kA = 0.000015;  //original value 0.000024
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 50; //38
-        public double minProfileAccel = -40; //-20
-        public double maxProfileAccel = 50; //32
+        public double maxWheelVel = 38; //50
+        public double minProfileAccel = -20; //-40
+        public double maxProfileAccel = 32; //50
 
         // turn profile parameters (in radians)
-        public double maxAngVel = Math.PI * 1.5 ; // shared with path
-        public double maxAngAccel = Math.PI * 1.5;
+        public double maxAngVel = Math.PI ; // shared with path
+        public double maxAngAccel = Math.PI; // *1.5
 
         // path controller gains
-        public double axialGain = 5.5;
-        public double lateralGain = 12;
-        public double headingGain = 6;
+        public double axialGain = 6;
+        public double lateralGain = 11.5;
+        public double headingGain = 7.5;
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
