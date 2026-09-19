@@ -7,22 +7,30 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.CommandAbstract;
 import org.firstinspires.ftc.teamcode.commands.CommandsV1;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import java.util.ArrayList;
 import java.util.List;
 
 
-@TeleOp(name = "Main V1 Red")
+@TeleOp(name = "Main Code")
 public class MainV1Red extends MainV0Red {
 
 
 
-
+    private DcMotorEx intake;
+    boolean intaking = false;
+    boolean outtaking = false;
+    double intakePower;
 
   
     @Override
@@ -30,7 +38,7 @@ public class MainV1Red extends MainV0Red {
         // tune inPerTick for ur drivetrain encoders
         robot = new CommandsV1(hardwareMap, new Pose2d(0, 0, 0));
         stateMachine = StateMachine.WAITING_FOR_START;
-
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
 
     }
 
@@ -44,6 +52,7 @@ public class MainV1Red extends MainV0Red {
     public void loop() {
         // keep subsystems updated
         robot.update();
+        intake.setPower(intakePower);
 
         /** Driver Operations **/
         // drivetrain
@@ -140,12 +149,43 @@ public class MainV1Red extends MainV0Red {
 
 
 
+
+
         //close to tip - further away
 
 
             // This is limelight shooting
         if (gamepad2.right_bumper){
 
+        }
+
+        if (gamepad1.rightBumperWasPressed())
+        {
+            if (!intaking)
+            {
+                intaking = false;
+                outtaking = true;
+                intakePower = 1;
+            }
+            else
+            {
+                outtaking = false;
+                intakePower = 0;
+            }
+        }
+        if (gamepad1.leftBumperWasPressed())
+        {
+            if (!outtaking)
+            {
+                intaking = true;
+                outtaking = false;
+                intakePower = -1;
+            }
+            else
+            {
+                intaking = false;
+                intakePower = 0;
+            }
         }
 
 
