@@ -4,12 +4,14 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 
+import org.firstinspires.ftc.teamcode.robot.subsystems.Feeder;
 import org.firstinspires.ftc.teamcode.robot.subsystems.HelixLocalisation;
 
 //import org.firstinspires.ftc.teamcode.robot.subsystems.LedController;
 import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
 
 //import org.firstinspires.ftc.teamcode.robot.subsystems.Vision; just for now
+import org.firstinspires.ftc.teamcode.robot.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.utils.Localizer;
 import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 
@@ -19,6 +21,8 @@ public abstract class CommandAbstract {
     // protected Vision vision; just for now
     public MecanumDrive drivetrain;
     public Intake intake;
+    public Feeder feeder;
+    public Shooter shooter;
 
 
     //private LedController ledController;
@@ -61,6 +65,10 @@ public abstract class CommandAbstract {
         drivetrain = new MecanumDrive(hardwareMap, startPose);
         helixLocaliser = drivetrain.getHelixLocalizer();
         localiser = drivetrain.getLocalizer();
+        intake = new Intake(hardwareMap);
+        feeder = new Feeder(hardwareMap);
+        shooter = new Shooter(hardwareMap);
+
         //vision = drivetrain.getVision(); just for now
 
         //ledController = new LedController(hardwareMap);
@@ -80,6 +88,23 @@ public abstract class CommandAbstract {
     public void update() {
         helixLocaliser.updateLocalisation();
         drivetrain.update();
+        //intake.update();
+    }
+
+    public void shoot(double targetVel) {
+        shooter.shoot(targetVel);
+    }
+
+    public void stopshoot() {
+        shooter.stop();
+    }
+
+    public void setFeeder(double power) {
+        feeder.setFeeder(power);
+    }
+
+    public void setintakePower(double intakepower){
+        intake.setPower(intakepower);
     }
 
 //    public void setintake(double power) {intake.setintake(power);}

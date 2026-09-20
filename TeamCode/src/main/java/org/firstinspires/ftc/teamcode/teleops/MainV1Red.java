@@ -18,12 +18,17 @@ import java.util.List;
 @TeleOp(name = "Main Code")
 public class MainV1Red extends MainV0Red {
 
+    public final int LAUNCHER_TARGET_VELOCITY = 1250; //2678 RPM
+    public final int LAUNCHER_MIN_VELOCITY = 1200; //2571 RPM
 
     Intake intake;
     boolean intaking = false;
 
     boolean outtaking = false;
     public double intakePower = 0;
+
+
+
 
   
     @Override
@@ -43,35 +48,32 @@ public class MainV1Red extends MainV0Red {
     @Override
     public void loop() {
         // keep subsystems updated
-        if (gamepad1.rightBumperWasPressed())
+        robot.update();
+        robot.setintakePower(intakePower);
+        if (gamepad2.rightBumperWasPressed())
         {
             if (!outtaking)
             {
                 intaking = false;
                 outtaking = true;
-                robot.intake.setintake(1.0);
+                intakePower = 1.0;
             }
             else
             {
                 outtaking = false;
-                robot.intake.setintake(0.0);
+                intakePower = 0.0;
             }
         }
-        if (gamepad1.leftBumperWasPressed())
-        {
-            if (!intaking)
-            {
+        if (gamepad2.leftBumperWasPressed()) {
+            if (!intaking) {
                 intaking = true;
                 outtaking = false;
-                robot.intake.setintake(-1.0);
-            }
-            else
-            {
+                intakePower = -1.0;
+            } else {
                 intaking = false;
-                robot.intake.setintake(0.0);
+                intakePower = 0.0;
             }
         }
-        robot.update();
         //intake.update(intakePower);
 
         /** Driver Operations **/
@@ -162,9 +164,21 @@ public class MainV1Red extends MainV0Red {
         //This is preset shooting
 
 
-        if (gamepad2.aWasPressed()) {
-
+        if (gamepad1.aWasPressed()) {
+            bindCommonDriveTrain();
         }
+
+        if (gamepad2.right_trigger > 0.5) {
+            robot.shoot(LAUNCHER_TARGET_VELOCITY);
+        }
+        else if (gamepad2.dpad_down) {robot.setFeeder(-1);}
+
+        else {
+            robot.stopshoot();
+        }
+
+        double shootvel = robot.shooter.getVelocity();
+
 
 
 
@@ -224,6 +238,12 @@ public class MainV1Red extends MainV0Red {
 
 
         telementryRoadRunner(telemetry, packet);
+
+        telemetry.addData("Shooter Velocity", shootvel);
+        packet.put("Shooter Velocity", shootvel);
+
+        telemetry.update();
+        dashboard.sendTelemetryPacket(packet);
 
         /**Start of Drive Train Information **/
         //telemetryDrivetrain(telemetry, packet);
