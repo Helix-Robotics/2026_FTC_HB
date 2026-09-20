@@ -5,20 +5,13 @@ import static org.firstinspires.ftc.teamcode.robot.subsystems.HelixLocalisation.
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.commands.CommandAbstract;
 import org.firstinspires.ftc.teamcode.commands.CommandsV1;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -26,11 +19,11 @@ import java.util.List;
 public class MainV1Red extends MainV0Red {
 
 
-
-    private DcMotorEx intake;
+    Intake intake;
     boolean intaking = false;
+
     boolean outtaking = false;
-    double intakePower;
+    public double intakePower = 0;
 
   
     @Override
@@ -38,7 +31,6 @@ public class MainV1Red extends MainV0Red {
         // tune inPerTick for ur drivetrain encoders
         robot = new CommandsV1(hardwareMap, new Pose2d(0, 0, 0));
         stateMachine = StateMachine.WAITING_FOR_START;
-        intake = hardwareMap.get(DcMotorEx.class, "intake");
 
     }
 
@@ -51,8 +43,36 @@ public class MainV1Red extends MainV0Red {
     @Override
     public void loop() {
         // keep subsystems updated
+        if (gamepad1.rightBumperWasPressed())
+        {
+            if (!outtaking)
+            {
+                intaking = false;
+                outtaking = true;
+                robot.intake.setintake(1.0);
+            }
+            else
+            {
+                outtaking = false;
+                robot.intake.setintake(0.0);
+            }
+        }
+        if (gamepad1.leftBumperWasPressed())
+        {
+            if (!intaking)
+            {
+                intaking = true;
+                outtaking = false;
+                robot.intake.setintake(-1.0);
+            }
+            else
+            {
+                intaking = false;
+                robot.intake.setintake(0.0);
+            }
+        }
         robot.update();
-        intake.setPower(intakePower);
+        //intake.update(intakePower);
 
         /** Driver Operations **/
         // drivetrain
@@ -159,34 +179,6 @@ public class MainV1Red extends MainV0Red {
 
         }
 
-        if (gamepad1.rightBumperWasPressed())
-        {
-            if (!intaking)
-            {
-                intaking = false;
-                outtaking = true;
-                intakePower = 1;
-            }
-            else
-            {
-                outtaking = false;
-                intakePower = 0;
-            }
-        }
-        if (gamepad1.leftBumperWasPressed())
-        {
-            if (!outtaking)
-            {
-                intaking = true;
-                outtaking = false;
-                intakePower = -1;
-            }
-            else
-            {
-                intaking = false;
-                intakePower = 0;
-            }
-        }
 
 
 

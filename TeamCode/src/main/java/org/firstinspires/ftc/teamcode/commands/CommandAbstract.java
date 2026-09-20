@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -15,12 +11,14 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.MecanumDrive;
 
 //import org.firstinspires.ftc.teamcode.robot.subsystems.Vision; just for now
 import org.firstinspires.ftc.teamcode.utils.Localizer;
+import org.firstinspires.ftc.teamcode.robot.subsystems.Intake;
 
 public abstract class CommandAbstract {
     private HelixLocalisation helixLocaliser;
     private Localizer localiser;
     // protected Vision vision; just for now
     public MecanumDrive drivetrain;
+    public Intake intake;
 
 
     //private LedController ledController;
@@ -84,6 +82,7 @@ public abstract class CommandAbstract {
         drivetrain.update();
     }
 
+//    public void setintake(double power) {intake.setintake(power);}
 
     // get launch state
 
@@ -291,6 +290,7 @@ public abstract class CommandAbstract {
                 break;
         }
     }
+
 
     public boolean turnToTagVariableFarShootingO(){
         /**
